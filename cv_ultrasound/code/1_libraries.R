@@ -29,6 +29,7 @@ boot,
 CTT,
 FSA,
 ordinal,
+compareGroups,
 
 # Tidying and cleaning data
 magrittr,

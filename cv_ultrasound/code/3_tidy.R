@@ -76,12 +76,14 @@ for(y in 2:21) {
       df[x,y] <- NA
     } else if (df[x,y] == 0 & df_conf[x,y] == 1) {
       df[x, y] <- "overconfidence" 
-    } else if (df_conf[x,y] == 0) {
-      df[x,y] <- "knowledge_gap"
     } else if (df[x,y] == 1 & df_conf[x,y] == 1) {
-      df[x,y] <- "appropriate" }
-  }
-}
+      df[x,y] <- "understanding" 
+    } else if (df[x,y] == 1 & df_conf[x,y] == 0) {
+      df[x, y] <- "underconfident" 
+    } else if (df[x,y] == 0 & df_conf[x,y] == 0) {
+      df[x, y] <- "knowledge_gap" 
+    }
+}}
 
 # Restructure answers, make factors, and melt it
 # Each ID and each question has a correct:confidence label
@@ -111,15 +113,17 @@ df_concordance <-
   full_join(a, b, by = c("id", "question"))
 
 # Set up alternative agreement table for correct x confidence
-# [2] = concurrence, [1] = discrepancy, [0] = overconfidence
+#  [0] = knowledge_gap, [1] = overconfident, [2] = underconfident, [3] = understanding
 df <- df_concordance
-df$agreement[df$correctness == 1 & df$confidence == 1] <- 2
-df$agreement[df$correctness == 0 & df$confidence == 1] <- 0
-df$agreement[df$correctness == 1 & df$confidence == 0] <- 1
-df$agreement[df$correctness == 0 & df$confidence == 0] <- 1
+df$agreement[df$correctness == 1 & df$confidence == 1] <- 3
+df$agreement[df$correctness == 0 & df$confidence == 1] <- 1
+df$agreement[df$correctness == 1 & df$confidence == 0] <- 2
+df$agreement[df$correctness == 0 & df$confidence == 0] <- 0
 df_concordance <- df
 
 # Clean up
 rm(a, b)
 
 # }}}
+
+# End of file
