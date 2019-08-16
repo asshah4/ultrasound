@@ -1,0 +1,17 @@
+---
+layout: default
+---
+
+<div class="page">
+  <h1 class="page-title">{{ page.title }}</h1>
+  {{ content }}
+</div>
+
+<h3 class="masthead-title">
+<a href="{{ site.baseurl }}/" title="Home">{{ site.title }}</a>
+
+{% for page in site.pages_list %}
+  &nbsp;&nbsp;&nbsp;
+  <small><a href="{{ site.baseurl }}{{ page[1]  }}">{{ page[0] }}</a></small>
+{% endfor %}
+</h3>

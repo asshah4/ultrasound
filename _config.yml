@@ -1,0 +1,52 @@
+# Dependencies
+markdown:         kramdown
+highlighter:      rouge
+
+# Permalinks
+permalink:        pretty
+
+# Setup
+title:            ultrasound reckoning
+tagline:          'Reviewing utility with a phase array'
+description:      'Lectures, guides, and literature review on the physical exam with an ultrasound probe'
+url:              http://asshah4.github.io
+baseurl:          /ultrasound
+
+author:
+  name:           'Anish Shah'
+
+paginate:         5
+
+# Custom vars
+version:          0.3.0
+
+github:
+  repo:           https://github.com/asshah4/ultrasound
+
+
+# Scholar settings
+scholar:
+  style: american-medical-association
+  locale: en
+
+  sort_by: none
+  order: ascending
+
+  source: _bibliography/
+  bibliography: bibfile.bib
+  bibliography_template: bibliography
+  use_raw_bibtex_entry: true
+  bibliography_item_tag: ul
+
+  replace_strings: true
+  join_strings:    true
+
+  details_dir:    bibliography
+  details_layout: bibtex.html
+  details_link:   Details
+
+  query: "@*"
+
+# Gems
+plugins: [jekyll-paginate, jekyll-gist, jekyll-scholar, jekyll-sitemap, jekyll-seo-tag]
+

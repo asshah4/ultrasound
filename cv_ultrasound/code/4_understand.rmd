@@ -1,0 +1,293 @@
+---
+title: "Point-of-care Ultrasound Curriculum and Resident Learning"
+author:
+- Anish Shah, MD^[Department of Medicine, School of Medicine, Emory University, Atlanta,
+  Georgia]
+- Mikhail Akbashev, MD^[Department of Medicine, School of Medicine, Emory University,
+  Atlanta, Georgia]
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: pdf_document
+header-includes:
+  - \usepackage{dcolumn}
+  - \usepackage{float}
+  - \usepackage{graphicx} 
+editor_options: 
+  chunk_output_type: console
+always_allow_html: yes
+csl: american-medical-association.csl
+subtitle: Exploration of Ultrasound Survey
+bibliography: medical_education.bib
+---
+
+```{r setup, global_options, include = FALSE}
+knitr::opts_chunk$set(
+  cache = TRUE,
+  warning = FALSE,
+  eval = TRUE,
+  echo = FALSE,
+  include = TRUE,
+  message = FALSE,
+  options(scipen = 999, digits = 3)
+)
+
+options(
+  xtable.table.placement = "H",
+  xtable.comment = FALSE
+)
+```
+
+```{r}
+# Libraries
+source("1_libraries.R")
+
+# Date intake
+source("2_intake.R")
+
+# Data tidying
+source("3_tidy.R")
+```
+
+# Overview
+
+This study was granted IRB exemption. Its purpose is to analyze the effect of training and curriculum on overconfidence with the utilization of cardiovascular point-of-care ultrasonography by residents at multiple sites of an academic institution, including VA, private teaching hospital, and public county hospital. All participants that were including gave informed consent, and the data remained de-identified when analyzed and stored.
+
+# Description of responses 
+
+## Cohort summary 
+
+The cohorts were divided by class years, from recent graduates of the program to current PGY3, PGY2, and PGY1. The data was acquired from 06/2018 to 08/2019. The population sampled was `r n_GRAD + n_PGY3 + n_PGY2 + n_PGY1` residents (including recent grads).
+
+The response rates per group is shown. The surveys were sent from June 2018 to August 2018. 
+
+| Cohort | n | Response (%) |
+| --- | --- | --- |
+| GRAD | `r n_GRAD` | `r length(demo$id[demo$cohort=="GRAD"])/n_GRAD * 100 ` |
+| PGY3 | `r n_PGY3` | `r length(demo$id[demo$cohort=="PGY3"])/n_PGY3 * 100 ` |
+| PGY2 | `r n_PGY2` | `r length(demo$id[demo$cohort=="PGY2"])/n_PGY2 * 100 ` |
+| PGY1 | `r n_PGY1` | `r length(demo$id[demo$cohort=="PGY1"])/n_PGY1 * 100 ` |
+
+From the responses, the comfort in diagnosis, procedural career interest (i.e. cardiology, pulmonary), and participation in the ultrasound curriculum was reviewed.
+
+```{r, results='asis'}
+tabular((cohort + 1) ~ (n = 1) + comfort_dx + proc_career + curriculum, data = demo) %>%
+  as.matrix() %>%
+  xtable(., caption = "Cardiac Views") %>%
+  print(., include.rownames = FALSE, include.colnames = FALSE, caption.placement = "top")
+```
+
+## Description of quiz responses by cohort
+
+The quiz was broken down into several sections. There were 5 targeted areas for the survey.
+- Cardiovascular view identification
+- Cardiovascular structure identification
+- Cardiovascular function assessment (e.g. ejection fraction)
+- Vascular structure identification (e.g. IVC, aorta)
+- Vascular function assessment (e.g. collapsibility of IVC)
+
+The responses are in the form of a percent by each cohort, so within cohort comparisons can be assessed.
+
+```{r, results='asis'}
+
+# Combine quiz and demographic data
+df <- full_join(demo, quiz, by = "id")
+
+# Summarize the quiz data, if possible
+# Cardiovascular view first
+tabular((cv1 + cv2 + cv3 + cv4 + cv5 + cv6) * (Percent("col")) * Format(digits = 2) ~ (cohort + 1), data = df) %>%
+  as.matrix() %>%
+  xtable(., caption = "Cardiac Views") %>%
+  print(., include.rownames = FALSE, include.colnames = FALSE, caption.placement = "top")
+
+# Cardiac structures
+tabular((cs1 + cs2 + cs3) * (Percent("col")) * Format(digits = 2) ~ (cohort + 1), data = df) %>%
+  as.matrix() %>%
+  xtable(., caption = "Cardiac Structures") %>%
+  print(., include.rownames = FALSE, include.colnames = FALSE, caption.placement = "top")
+
+# Cardiac function
+tabular((cf1 + cf2 + cf3 + cf4 + cf5) * (Percent("col")) * Format(digits = 2) ~ (cohort + 1), data = df) %>%
+  as.matrix() %>%
+  xtable(., caption = "Cardiac Function") %>%
+  print(., include.rownames = FALSE, include.colnames = FALSE, caption.placement = "top")
+
+# Vascular structures
+tabular((vs1 + vs2) * (Percent("col")) * Format(digits = 2) ~ (cohort + 1), data = df) %>%
+  as.matrix() %>%
+  xtable(., caption = "Vascular Structures") %>%
+  print(., include.rownames = FALSE, include.colnames = FALSE, caption.placement = "top")
+
+# Vascular structures
+tabular((vf1 + vf2 + vf3 + vf4) * (Percent("col")) * Format(digits = 2) ~ (cohort + 1), data = df) %>%
+  as.matrix() %>%
+  xtable(., caption = "Vascular Function") %>%
+  print(., include.rownames = FALSE, include.colnames = FALSE, caption.placement = "top")
+```
+
+## Quiz Accuracy
+
+The quiz was graded against an expert review by attendings in critical care and emergency medicine with ultrasound training.
+
+```{r, results='asis'}
+# Combine scores and demographic information
+df <- full_join(demo[c("id", "cohort", "curriculum", "proc_career")], df_scores, by = "id") %>% na.omit()
+
+# Table of scores
+tabular((cohort + 1) ~ (percent) * Format(digits = 2) * (mean + sd), data = df) %>%
+  as.matrix() %>%
+  xtable(., caption = "Mean scores for cohort") %>%
+  print(., include.rownames = FALSE, include.colnames = FALSE, caption.placement = "top")
+```
+
+The active intervention was the completion of the ultrasound curriculum. With Welch's two sample t-test:
+
+```{r, results='asis'}
+t.test(
+  df$percent[df$curriculum == "Yes"],
+  df$percent[df$curriculum == "No"]
+)
+```
+
+This suggests that the scores were significantly different by the advent of hte curriculum. However, years in training may mediate the effect. 
+
+```{r, out.width="60%"}
+# Using prior dataframe
+ggplot(df, aes(x = cohort, y = percent, fill = cohort)) +
+  geom_boxplot() +
+  labs(
+    title = "Training cohorts and quiz accuracy",
+    x = "Level of training",
+    y = "Percent correct"
+  ) +
+  theme_minimal() +
+  scale_fill_viridis_d()
+```
+
+# Confidence levels
+
+The concern for this study was not only the effect of curriculum on score, but the associated confidence in medical decision making.Each ultrasound image could be scored as _correct_ or _incorrect_ based on the expert consensus. Each response was tied to a confidence level, broken down into _confident_ or _not confident_ binary. This leads to a 2 x 2 table as below:
+
+| | Confident | Not Confident |
+| --- | --- | --- |
+| Right | RC | RN |
+| Wrong | WC | WN |
+
+__WC__ is an example of overconfidence, and an area of cognitive error from both intrinsic and extrinsic factors.[@Berner2008] The categories are: WC ("overconfidence") < RN = WN ("knowledge_gap") < RC ("appropriate")
+
+## Distribution of confidence
+
+```{r, results='asis'}
+# Data needed is overconfidence and demographic
+df <- na.omit(inner_join(demo, df_overconfidence, by = "id"))
+
+# Confidence level visualization by cohort
+ggplot(df, aes(x = question, fill = level)) +
+  facet_wrap(~cohort) +
+  geom_bar(position = "fill") +
+  labs(
+    title = "Distribution of Confidence",
+    x = "Question identifiers",
+    y = "Response count distribution",
+    caption = "Each question subgroup (e.g. CS, CF, CV, VF, VS) are in increasing difficulty"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  scale_fill_viridis_d()
+
+# Confidence level by curriculum 
+ggplot(df, aes(x = question, fill = level)) +
+  facet_wrap(~curriculum) +
+  geom_bar(position = "fill") +
+  labs(
+    title = "Distribution of Confidence",
+    x = "Question identifiers",
+    y = "Response count distribution",
+    caption = "Each question subgroup (e.g. CS, CF, CV, VF, VS) are in increasing difficulty"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  scale_fill_viridis_d()
+```
+
+This graph shows a pattern of an increasing amount of confidence with the further levels of training, at least visually, as well as by addition of curriculum.
+
+```{r, results='asis', out.width="60%"}
+# Similar data frame as above
+ggplot(df, aes(x = level, fill = cohort)) +
+  facet_wrap(~cohort, ncol = 1) +
+  geom_bar(aes(y = ..prop.., group = 1), position = "dodge") +
+  scale_fill_viridis_d() +
+  theme_minimal() +
+  coord_flip() +
+  labs(
+	   title = "Overconfidence by cohort year",
+	   x = "Categories",
+	   y = "Percent"
+	   )
+
+
+```
+
+This visualization represents the increase in overall confidence and correct answers with time/curriculum, however these two terms interact and confound interpretation. 
+
+## Confidence and accuracy combined
+
+```{r, results='asis'}
+# Data
+df <- gather(df_concordance[c("id", "question", "correctness", "confidence")], key = "measure", value = "value", -id, -question) %>%
+  inner_join(demo, ., by = "id") %>%
+  na.omit()
+
+# Visualize confidence and accuracy by curriculum
+ggplot(df, aes(x = question, fill = measure)) +
+  facet_wrap(~curriculum) +
+  geom_bar(aes(y = value), position="dodge", stat = "summary", fun.y = "mean") +
+  scale_fill_viridis_d(begin = .2) + 
+  theme_minimal() +
+  labs(
+    title = "Confidence and accuracy by curriculum introduction",
+    x = "Questions",
+    y = "Mean"
+  ) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+
+## Regression analysis of confidence
+
+Simple regression analysis will start to establish the most important relationships, although a more complex model may be needed (e.g. mixed effects, structured equation modelling, etc)
+
+```{r, results='asis'}
+# Data
+df <-
+  inner_join(demo[c("id", "cohort", "curriculum", "interest_level", "comfort_dx", "proc_career")], df_concordance, by = "id") %>%
+  mutate_at(c("id", "question"), funs(factor(.))) %>%
+  na.omit()
+
+# Description of data
+tabular((curriculum + cohort + 1) ~ (correctness + confidence + agreement)*(mean + sd)*Format(digits = 2), data = df) %>%
+  as.matrix() %>%
+  xtable(., caption = "Description of concordance") %>%
+  print(., include.rownames = FALSE, include.colnames = FALSE, caption.placement = "top")
+```
+
+```{r}
+# Initial regressions ...
+a <- clmm(factor(agreement) ~ curriculum + (1 | id), data = df, Hess = 1)
+b <- clmm(factor(agreement) ~ curriculum + proc_career + interest_level + (1 | id), data = df)
+c <- clmm(factor(agreement) ~ cohort + (1 | cohort / id), data = df)
+d <- clmm(factor(agreement) ~ curriculum + cohort + (1 | cohort / id), data = df)
+e <- clmm(factor(agreement) ~ curriculum + cohort + curriculum:cohort + (1 | cohort / id), data = df)
+f <- clmm(factor(agreement) ~ curriculum + cohort +  (1|cohort/id) + (1|cohort/curriculum), data = df, Hess = 1)
+
+# Focusing on curriculum effect
+
+summary(a)
+summary(b)
+summary(c)
+```
+
+Through regression analysis, it seems that the curriculum is significant in improving level of confidence-knowledge agreement. However, training level is a strong predictor as well, however the interaction between cohort and curriculum cannot be pulled apart through simple testing. 
+
+The OR of being overconfident = `r exp(a$coefficients[1])`, which means that the addition of the curriculum decreases the odds of being overconfident by 4-fold.  We may extend that there is a ordinal linearity between overconfidence, knowledge gaps, and appropriate confidence/correctness.[@Friedman2005]
+
+# References
