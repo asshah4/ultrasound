@@ -74,6 +74,7 @@ tabular((cohort + 1) ~ (n = 1) + comfort_dx + proc_career + curriculum, data = d
 ## Description of quiz responses by cohort
 
 The quiz was broken down into several sections. There were 5 targeted areas for the survey.
+
 - Cardiovascular view identification
 - Cardiovascular structure identification
 - Cardiovascular function assessment (e.g. ejection fraction)
@@ -291,12 +292,29 @@ The OR of being overconfident = `r exp(a$coefficients[1])`, which means that the
 df <- demo
 
 # Compare groups
-cmp <- compareGroups(cohort ~ curriculum + experience + comfort_dx + comfort_tx + interest_level, data = df)
+cmp <- compareGroups(cohort ~ curriculum + experience + comfort_dx + comfort_tx + interest_level + proc_career, data = df)
 cmp_tbl <- createTable(cmp, show.n = F, show.ratio = F, show.p.overall = F)
 ```
 
+- description of baseline cohort
+- describe the interest/comfort in sonography, as well as career
+- describe cohort/curriculum presence
 
 ## Point-of-care ultrasonography knowledge 
+
+```{r, include = FALSE}
+# Data
+df <- inner_join(demo, df_scores)
+
+# Graph
+ggplot(df, aes(x=cohort, y = percent)) +
+  geom_boxplot()
+
+```
+
+
+- quiz description 
+- quiz accuracy
 
 ## Confidence and overconfidence
 
@@ -312,3 +330,10 @@ export2csv(cmp_tbl, file = "table1.csv")
 
 
 # Figures
+
+## Figure 1
+
+
+
+## Figure 2
+
