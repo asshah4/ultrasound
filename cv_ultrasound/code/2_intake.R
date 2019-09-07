@@ -137,4 +137,31 @@ answers <- c(
 "Non-Collapsible IVC"
 )
 
+question_type <- c(
+"cv",
+"cv",
+"cv",
+"cv",
+"cv",
+"cv",
+"cs",
+"cs",
+"cs",
+"cf",
+"cf",
+"cf",
+"cf",
+"cf",
+"vs",
+"vs",
+"vf",
+"vf",
+"vf",
+"vf"
+)
+
+quiz_guide <-
+  bind_cols(question = questions, question_type = question_type) %>%
+  bind_cols(., answers = answers)
+
 # }}}
