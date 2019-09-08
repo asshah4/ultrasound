@@ -298,9 +298,7 @@ cmp <- compareGroups(cohort ~ curriculum + experience + comfort_dx + comfort_tx 
 cmp_tbl <- createTable(cmp, show.n = F, show.ratio = F, show.p.overall = F)
 ```
 
-- description of baseline cohort
-- describe the interest/comfort in sonography, as well as career
-- describe cohort/curriculum presence
+There were a total of `r nrow(df)` participants in the study, including PGY1 (n=`r nrow(df[df$cohort == "PGY1",])`), PGY2 (n=`r nrow(df[df$cohort == "PGY2",])`), PGY3 (n=`r nrow(df[df$cohort == "PGY3",])`), and recent graduates (n=`r nrow(df[df$cohort == "GRAD",])`). There was >80% self-reported interest in POCUS, with over >60% expressing interest in a procedural career, and <30% having prior experience in POCUS curriculum.
 
 ## Point-of-care ultrasonography knowledge 
 
