@@ -160,6 +160,9 @@ cross-sectional study design. This limits our interpretation of the
 directionality of the association. Of the population sampled, there is
 likely also a self-selection bias for those that chose to participate.
 
+CONCLUSION
+==========
+
 TABLES
 ======
 
