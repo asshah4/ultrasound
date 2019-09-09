@@ -30,6 +30,7 @@ CTT,
 FSA,
 ordinal,
 compareGroups,
+skimr,
 
 # Tidying and cleaning data
 magrittr,

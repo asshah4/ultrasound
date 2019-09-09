@@ -49,9 +49,7 @@ source("2_intake.R")
 source("3_tidy.R")
 ```
 
-# Description
-
-## Cohort summary 
+# Methods
 
 The cohorts were divided by class years, from recent graduates of the program to current PGY3, PGY2, and PGY1. The data was acquired from 06/2018 to 08/2019. The population sampled was `r n_GRAD + n_PGY3 + n_PGY2 + n_PGY1` residents (including recent grads).
 
@@ -64,16 +62,7 @@ The response rates per group is shown. The surveys were sent from June 2018 to A
 | PGY2 | `r n_PGY2` | `r length(demo$id[demo$cohort=="PGY2"])/n_PGY2 * 100 ` |
 | PGY1 | `r n_PGY1` | `r length(demo$id[demo$cohort=="PGY1"])/n_PGY1 * 100 ` |
 
-From the responses, the comfort in diagnosis, procedural career interest (i.e. cardiology, pulmonary), and participation in the ultrasound curriculum was reviewed.
-
-```{r, results='asis'}
-tabular((cohort + 1) ~ (n = 1) + comfort_dx + proc_career + curriculum, data = demo) %>%
-  as.matrix() %>%
-  xtable(., caption = "Cardiac Views") %>%
-  print(., include.rownames = FALSE, include.colnames = FALSE, caption.placement = "top")
-```
-
-## Description of quiz responses by cohort
+## Quiz breakdown
 
 The quiz was broken down into several sections. There were 5 targeted areas for the survey.
 
@@ -85,205 +74,14 @@ The quiz was broken down into several sections. There were 5 targeted areas for 
 
 The responses are in the form of a percent by each cohort, so within cohort comparisons can be assessed.
 
-```{r, results='asis'}
-
-# Combine quiz and demographic data
-df <- full_join(demo, quiz, by = "id")
-
-# Summarize the quiz data, if possible
-# Cardiovascular view first
-tabular((cv1 + cv2 + cv3 + cv4 + cv5 + cv6) * (Percent("col")) * Format(digits = 2) ~ (cohort + 1), data = df) %>%
-  as.matrix() %>%
-  xtable(., caption = "Cardiac Views") %>%
-  print(., include.rownames = FALSE, include.colnames = FALSE, caption.placement = "top")
-
-# Cardiac structures
-tabular((cs1 + cs2 + cs3) * (Percent("col")) * Format(digits = 2) ~ (cohort + 1), data = df) %>%
-  as.matrix() %>%
-  xtable(., caption = "Cardiac Structures") %>%
-  print(., include.rownames = FALSE, include.colnames = FALSE, caption.placement = "top")
-
-# Cardiac function
-tabular((cf1 + cf2 + cf3 + cf4 + cf5) * (Percent("col")) * Format(digits = 2) ~ (cohort + 1), data = df) %>%
-  as.matrix() %>%
-  xtable(., caption = "Cardiac Function") %>%
-  print(., include.rownames = FALSE, include.colnames = FALSE, caption.placement = "top")
-
-# Vascular structures
-tabular((vs1 + vs2) * (Percent("col")) * Format(digits = 2) ~ (cohort + 1), data = df) %>%
-  as.matrix() %>%
-  xtable(., caption = "Vascular Structures") %>%
-  print(., include.rownames = FALSE, include.colnames = FALSE, caption.placement = "top")
-
-# Vascular structures
-tabular((vf1 + vf2 + vf3 + vf4) * (Percent("col")) * Format(digits = 2) ~ (cohort + 1), data = df) %>%
-  as.matrix() %>%
-  xtable(., caption = "Vascular Function") %>%
-  print(., include.rownames = FALSE, include.colnames = FALSE, caption.placement = "top")
-```
-
-## Quiz Accuracy
-
-The quiz was graded against an expert review by attendings in critical care and emergency medicine with ultrasound training.
-
-```{r, results='asis'}
-# Combine scores and demographic information
-df <- full_join(demo[c("id", "cohort", "curriculum", "proc_career")], df_scores, by = "id") %>% na.omit()
-
-# Table of scores
-tabular((cohort + 1) ~ (percent) * Format(digits = 2) * (mean + sd), data = df) %>%
-  as.matrix() %>%
-  xtable(., caption = "Mean scores for cohort") %>%
-  print(., include.rownames = FALSE, include.colnames = FALSE, caption.placement = "top")
-```
-
-The active intervention was the completion of the ultrasound curriculum. With Welch's two sample t-test:
-
-```{r, results='asis'}
-t.test(
-  df$percent[df$curriculum == "Yes"],
-  df$percent[df$curriculum == "No"]
-)
-```
-
-This suggests that the scores were significantly different by the advent of hte curriculum. However, years in training may mediate the effect. 
-
-```{r, out.width="60%"}
-# Using prior dataframe
-ggplot(df, aes(x = cohort, y = percent, fill = cohort)) +
-  geom_boxplot() +
-  labs(
-    title = "Training cohorts and quiz accuracy",
-    x = "Level of training",
-    y = "Percent correct"
-  ) +
-  theme_minimal() +
-  scale_fill_viridis_d()
-```
-
-# Overconfidence
+## Overconfidence
 
 Residents also labeled their confidence in their answer choices. Four categories were devised representing POCUS knowledge and confidence in decision-making.
 
-- Understanding: correct, confident
-- Underconfident: correct, not confident
-- Knowledge Gap: incorrect, not confident
-- Overconfident - incorrect, confident
-
-# Distribution of confidence
-
-```{r, results='asis'}
-# Data needed is overconfidence and demographic
-df <- na.omit(inner_join(demo, df_overconfidence, by = "id"))
-
-# Confidence level visualization by cohort
-ggplot(df, aes(x = question, fill = level)) +
-  facet_wrap(~cohort) +
-  geom_bar(position = "fill") +
-  labs(
-    title = "Distribution of Confidence",
-    x = "Question identifiers",
-    y = "Response count distribution",
-    caption = "Each question subgroup (e.g. CS, CF, CV, VF, VS) are in increasing difficulty"
-  ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  scale_fill_viridis_d()
-
-# Confidence level by curriculum 
-ggplot(df, aes(x = question, fill = level)) +
-  facet_wrap(~curriculum) +
-  geom_bar(position = "fill") +
-  labs(
-    title = "Distribution of Confidence",
-    x = "Question identifiers",
-    y = "Response count distribution",
-    caption = "Each question subgroup (e.g. CS, CF, CV, VF, VS) are in increasing difficulty"
-  ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  scale_fill_viridis_d()
-```
-
-This graph shows a pattern of an increasing amount of confidence with the further levels of training, at least visually, as well as by addition of curriculum.
-
-```{r, results='asis', out.width="60%"}
-# Similar data frame as above
-ggplot(df, aes(x = level, fill = cohort)) +
-  facet_wrap(~cohort, ncol = 1) +
-  geom_bar(aes(y = ..prop.., group = 1), position = "dodge") +
-  scale_fill_viridis_d() +
-  theme_minimal() +
-  coord_flip() +
-  labs(
-	   title = "Overconfidence by cohort year",
-	   x = "Categories",
-	   y = "Percent"
-	   )
-```
-
-This visualization represents the increase in overall confidence and correct answers with time/curriculum, however these two terms interact and confound interpretation. 
-
-## Confidence and accuracy combined
-
-```{r, results='asis'}
-# Data
-df <- gather(df_concordance[c("id", "question", "correctness", "confidence")], key = "measure", value = "value", -id, -question) %>%
-  inner_join(demo, ., by = "id") %>%
-  na.omit()
-
-# Visualize confidence and accuracy by curriculum
-ggplot(df, aes(x = question, fill = measure)) +
-  facet_wrap(~curriculum) +
-  geom_bar(aes(y = value), position="dodge", stat = "summary", fun.y = "mean") +
-  scale_fill_viridis_d(begin = .2) + 
-  theme_minimal() +
-  labs(
-    title = "Confidence and accuracy by curriculum introduction",
-    x = "Questions",
-    y = "Mean"
-  ) + 
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-```
-
-## Regression analysis of confidence
-
-Simple regression analysis will start to establish the most important relationships, although a more complex model may be needed (e.g. mixed effects, structured equation modelling, etc)
-
-```{r, results='asis'}
-# Data
-df <-
-  inner_join(demo[c("id", "cohort", "curriculum", "interest_level", "comfort_dx", "proc_career")], df_concordance, by = "id") %>%
-  mutate_at(c("id", "question"), funs(factor(.))) %>%
-  na.omit()
-
-# Description of data
-tabular((curriculum + cohort + 1) ~ (correctness + confidence + agreement)*(mean + sd)*Format(digits = 2), data = df) %>%
-  as.matrix() %>%
-  xtable(., caption = "Description of concordance") %>%
-  print(., include.rownames = FALSE, include.colnames = FALSE, caption.placement = "top")
-```
-
-```{r}
-# Initial regressions ...
-a <- clmm(factor(agreement) ~ curriculum + (1 | id), data = df, Hess = 1)
-b <- clmm(factor(agreement) ~ curriculum + proc_career + interest_level + (1 | id), data = df)
-c <- clmm(factor(agreement) ~ cohort + (1 | cohort / id), data = df)
-d <- clmm(factor(agreement) ~ curriculum + cohort + (1 | cohort / id), data = df)
-e <- clmm(factor(agreement) ~ curriculum + cohort + curriculum:cohort + (1 | cohort / id), data = df)
-f <- clmm(factor(agreement) ~ curriculum + cohort +  (1|cohort/id) + (1|cohort/curriculum), data = df, Hess = 1)
-
-# Focusing on curriculum effect
-
-summary(a)
-summary(b)
-summary(c)
-```
-
-Through regression analysis, it seems that the curriculum is significant in improving level of confidence-knowledge agreement. However, training level is a strong predictor as well, however the interaction between cohort and curriculum cannot be pulled apart through simple testing. 
-
-The OR of being overconfident = `r exp(a$coefficients[1])`, which means that the addition of the curriculum decreases the odds of being overconfident by 4-fold.  We may extend that there is a ordinal linearity between overconfidence, knowledge gaps, and appropriate confidence/correctness.
-
+| | Confident | Not Confident |
+| --- | --- | --- | 
+| Correct | Understanding | Underconfident |
+| Incorrect | Overconfident | Knowledge Gap |
 
 # Results
 
@@ -294,11 +92,12 @@ The OR of being overconfident = `r exp(a$coefficients[1])`, which means that the
 df <- demo
 
 # Compare groups
-cmp <- compareGroups(cohort ~ curriculum + experience + comfort_dx + comfort_tx + interest_level + proc_career, data = df)
-cmp_tbl <- createTable(cmp, show.n = F, show.ratio = F, show.p.overall = F)
+cmp_baseline <- 
+  compareGroups(cohort ~ curriculum + experience + comfort_dx + comfort_tx + interest_level + proc_career, data = df) %>% 
+  createTable(., show.n = F, show.ratio = F, show.p.overall = F)
 ```
 
-There were a total of `r nrow(df)` participants in the study, including PGY1 (n=`r nrow(df[df$cohort == "PGY1",])`), PGY2 (n=`r nrow(df[df$cohort == "PGY2",])`), PGY3 (n=`r nrow(df[df$cohort == "PGY3",])`), and recent graduates (n=`r nrow(df[df$cohort == "GRAD",])`). There was >80% self-reported interest in POCUS, with over >60% expressing interest in a procedural career, and <30% having prior experience in POCUS curriculum.
+There were a total of `r nrow(df)` participants in the study, including PGY1 (n=`r nrow(df[df$cohort == "PGY1",])`), PGY2 (n=`r nrow(df[df$cohort == "PGY2",])`), PGY3 (n=`r nrow(df[df$cohort == "PGY3",])`), and recent graduates (n=`r nrow(df[df$cohort == "GRAD",])`). There was >80% self-reported interest in POCUS, with over >60% expressing interest in a procedural career, and <30% having prior experience in POCUS. Further breakdown by cohort is seen in __Table 1__.
 
 ## Point-of-care ultrasonography knowledge 
 
@@ -309,25 +108,107 @@ df <- inner_join(demo, df_scores) %>%
   createTable(., show.n = F, show.ratio = F, show.p.overall = F)
 ```
 
-The mean percent score (SD) on the questionnaire was `r mean(na.omit(df_scores$percent))`% (`r sd(na.omit(df_scores$percent))`). By cohort, the PGY1 class scored `r df$descr[1,1]`, the PGY2 class scored `r df$descr[1,2]`, the PGY3 class scored `r df$descr[1,3]`, and the recent graduates scored `r df$descr[1,4]`. The questions were further broken down by type, as seen in __Figure XXX___.
+The mean percent score (SD) on the questionnaire was `r mean(na.omit(df_scores$percent))` (`r sd(na.omit(df_scores$percent))`). By cohort, the PGY1 class scored `r df$descr[1,1]`, the PGY2 class scored `r df$descr[1,2]`, the PGY3 class scored `r df$descr[1,3]`, and the recent graduates scored `r df$descr[1,4]`. The questions were further broken down by type, as seen in __Figure XXX___.
 
-- quiz description 
-- quiz accuracy
+```{r t-test}
+# Data 
+df <- inner_join(demo, df_scores)
 
-## Confidence and overconfidence
+# Curriculum
+tcur <- t.test(
+  df$percent[df$curriculum == "Yes"],
+  df$percent[df$curriculum == "No"]
+)
 
+# Cohorts
+tcoh12 <- t.test(
+  df$percent[df$cohort == "PGY1"],
+  df$percent[df$cohort == "PGY2"]
+)
+tcoh13 <- t.test(
+  df$percent[df$cohort == "PGY1"],
+  df$percent[df$cohort == "PGY3"]
+)
+tcoh1g <- t.test(
+  df$percent[df$cohort == "PGY1"],
+  df$percent[df$cohort == "GRAD"]
+)
+tcoh23 <- t.test(
+  df$percent[df$cohort == "PGY2"],
+  df$percent[df$cohort == "PGY3"]
+)
+tcoh2g <- t.test(
+  df$percent[df$cohort == "PGY2"],
+  df$percent[df$cohort == "GRAD"]
+)
+tcoh3g <- t.test(
+  df$percent[df$cohort == "PGY3"],
+  df$percent[df$cohort == "GRAD"]
+)
+```
+
+There was a difference in scores after completion of the curriculum (p = `r tcur$p.value`), as seen in __Figure XXX__.  
+
+## Confidence levels
+
+```{r confidence overview}
+# Data frame
+df <- inner_join(df_overconfidence, demo, by = "id") %>%
+  inner_join(., quiz_guide, by = "question") %>%
+  na.omit()
+
+# For basic overview
+tmp <- df_concordance$confidence %>% na.omit()
+tconf <- prop.table(table(df_overconfidence$level)) * 100
+tlevel <- prop.table(table(df$level, df$curriculum), margin = 1) * 100
+
+# Comparison table
+cmp_confidence <- compareGroups(level ~ cohort + curriculum, data = df) %>%
+  createTable(., show.n = FALSE, show.ratio = FALSE, show.p.overall = FALSE)
+
+# Basic overview of confidence
+inner_join(df_concordance, demo, by = "id") %>%
+  compareGroups(correctness ~ cohort, data = .) %>%
+  createTable(., show.n = FALSE, show.ratio = FALSE, show.p.overall = FALSE)
+```
+
+Overall, participants reported being confident on `r mean(tmp)`% (`r sd(tmp)`) questions. When compared with their individual answer choices, `r tconf[1]`% demonstrated a _Knowledge Gap_, `r tconf[2]`% demonstrated _Overconfidence_, `r tconf[3]`% demonstrated _Underconfidence_, and `r tconf[4]`% demonstrated _Understanding_. This is further delineated in __Table 2__, including by presence of the curriculum. Of note, although there was an increase in _Understanding_ from `r tlevel[4,1]`% to `r tlevel[4,2]` after the curriculum, there was also an increase in _Overconfidence_ from `r tlevel[2,1]`% to `r tlevel[2,2]`%. The distrubtion of confidence by question type is seen in __Figure XXX__.
+
+## Regression Analysis
+
+```{r}
+# Data
+df <- inner_join(df_overconfidence, demo, by = "id") %>% na.omit()
+df$level %<>% factor()
+
+# Initial regressions
+mcur <- clmm(level ~ curriculum + (1|id), data = df)
+mcoh <- clmm(level ~ cohort + (1|id), data = df)
+mint <- clmm(level ~ curriculum + cohort + curriculum:cohort + (1|id), data = df)
+
+tmp <- summary(mcur)
+```
+
+Curriculum was found to be significant in affecting congruence between confidence and competence (p = `r tmp$coefficients[4,4]`). Completion of curriculum had an OR = `r exp(coef(mcur)[4])` (95% confidence interval (CI) = `r exp(confint(mcur))[4,1]`, `r exp(confint(mcur))[4,2]`) of demonstrating _Understanding_ over other categories (e.g. _Overconfidence_). In an additional model adjusted for cohort, there was a significant negative interaction between curriculum and cohort year (p = `r summary(mint)$coefficients[9,4]`).
 
 # Tables
 
 ## Table 1
 
 ```{r}
-export2csv(cmp_tbl, file = "table1.csv")
+export2csv(cmp_baseline, file = "table1.csv")
 ```
+
+## Table 2
+
+```{r}
+export2csv(cmp_confidence, file = "table2.csv")
+```
+
 
 # Figures
 
-## Figure 1
+## Figure XXX
 
 ```{r plot score by type of question}
 # data
@@ -343,15 +224,99 @@ levels(df$question_type) <- c("LVEF", "CV Anatomy", "US View", "Volume", "Vasc S
 # Score by group
 ggplot(data = na.omit(df), aes(x = cohort, y = score, fill = cohort)) + 
   stat_summary(fun.y = "mean", geom = "bar") +
-  scale_y_continuous(labels = scales::percent) + 
-  facet_wrap(~question_type) + 
+  scale_y_continuous(labels = percent) + 
+  facet_wrap(~question_type, ncol = 1, scales = "free_x") + 
   scale_fill_viridis_d() + 
+  theme_minimal() +
   theme(
     legend.position = "none"
-  ) + 
-  theme_minimal() 
+  ) +
+  labs(
+    title = "Scores within each question type",
+    x = "Cohort",
+    y = "Percentage"
+  )
 ```
 
+## Figure XXX
 
-## Figure 2
+```{r fig cohort scores}
+# Combine scores and demographic information
+df <- full_join(demo[c("id", "cohort", "curriculum", "proc_career")], df_scores, by = "id") %>% na.omit()
+
+# Comparisons for box plot
+my_comp <- list(c(1,2), c(2,3), c(3,4), c(1,4))
+
+# X axis, change to numeric and add labels later
+# This is to add a V-line for the curriculum
+levels(df$cohort) <- c(1,2,3,4)
+
+# GGpubr version for ease
+ggboxplot(na.omit(df), x = "cohort", y = "percent", fill = "cohort") +
+  scale_fill_viridis_d() + 
+  stat_compare_means(comparisons = my_comp, label = "p.signif", method = "t.test") + 
+  labs(
+    title = "Training cohorts and quiz accuracy",
+    x = "Level of training",
+    y = "Percent correct"
+  ) +
+  theme_minimal() + 
+  rremove("legend") +
+  scale_x_discrete(labels = c("1" = "PGY1", "2" = "PGY2", "3" = "PGY3", "4" = "GRAD")) +
+  geom_vline(xintercept = 2.4, linetype = "dashed", color = "indianred", size = 0.5) +
+  geom_text(aes(x = 2.7, y = 40, label = "Curriculum\nIntervention"), colour = "indianred")
+```
+
+## Figure XXX
+
+```{r fig confidence by curriculum}
+# Combine confidence and cohort population
+df <- 
+  inner_join(demo[c("id", "cohort", "curriculum")], df_overconfidence, by = "id") %>%
+  inner_join(quiz_guide, ., by = "question") %>%
+  na.omit()
+
+# Relabel the question types
+df$question_type %<>% factor()
+levels(df$question_type) <- c("LVEF", "CV Anatomy", "US View", "Volume", "Vasc Strx")
+
+# Visualize by curriculum
+ggplot(df, aes(x = curriculum, fill = level)) + 
+  facet_wrap(~question_type, ncol = 1, scale = "free_y") + 
+  geom_bar(aes(y = ..count../sum(..count..)), position = "dodge") + 
+  scale_y_continuous(labels = percent) + 
+  labs(
+    title = "Confidence Levels by Curriculum",
+    x = "Completion of curriculum",
+    y = "Percent"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom"
+    ) +
+  scale_fill_viridis_d(name = "Confidence Levels", labels = c("Knowledge Gap", "Overconfidence", "Underconfidence", "Understanding"))
+```
+
+## Supplemental Figure XXX
+
+```{r fig confidence v accuracy}
+# Data
+df <- gather(df_concordance[c("id", "question", "correctness", "confidence")], key = "measure", value = "value", -id, -question) %>%
+  inner_join(demo, ., by = "id") %>%
+  na.omit()
+
+# Visualize confidence and accuracy by curriculum
+ggplot(df, aes(x = question, fill = measure)) +
+  facet_wrap(~curriculum) +
+  geom_bar(aes(y = value), position="dodge", stat = "summary", fun.y = "mean") +
+  scale_fill_viridis_d(begin = .2) + 
+  scale_y_continuous(labels = percent) + 
+  theme_minimal() +
+  labs(
+    title = "Confidence and accuracy by curriculum introduction",
+    x = "Questions",
+    y = "Proportion"
+  ) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
 
