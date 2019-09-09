@@ -97,7 +97,7 @@ cmp_baseline <-
   createTable(., show.n = F, show.ratio = F, show.p.overall = F)
 ```
 
-There were a total of `r nrow(df)` participants in the study, including PGY1 (n=`r nrow(df[df$cohort == "PGY1",])`), PGY2 (n=`r nrow(df[df$cohort == "PGY2",])`), PGY3 (n=`r nrow(df[df$cohort == "PGY3",])`), and recent graduates (n=`r nrow(df[df$cohort == "GRAD",])`). There was >80% self-reported interest in POCUS, with over >60% expressing interest in a procedural career, and <30% having prior experience in POCUS. Further breakdown by cohort is seen in __Table 1__.
+There were a total of `r nrow(df)` participants in the study, including PGY1 (n=`r nrow(df[df$cohort == "PGY1",])`), PGY2 (n=`r nrow(df[df$cohort == "PGY2",])`), PGY3 (n=`r nrow(df[df$cohort == "PGY3",])`), and recent graduates (n=`r nrow(df[df$cohort == "GRAD",])`). There was >80% self-reported interest in POCUS, with over >60% expressing interest in a procedural career, and <30% having prior experience in POCUS. Further breakdown by cohort is seen in __TABLE__.
 
 ## Point-of-care ultrasonography knowledge 
 
@@ -108,7 +108,7 @@ df <- inner_join(demo, df_scores) %>%
   createTable(., show.n = F, show.ratio = F, show.p.overall = F)
 ```
 
-The mean percent score (SD) on the questionnaire was `r mean(na.omit(df_scores$percent))` (`r sd(na.omit(df_scores$percent))`). By cohort, the PGY1 class scored `r df$descr[1,1]`, the PGY2 class scored `r df$descr[1,2]`, the PGY3 class scored `r df$descr[1,3]`, and the recent graduates scored `r df$descr[1,4]`. The questions were further broken down by type, as seen in __Figure XXX___.
+The mean percent score (SD) on the questionnaire was `r mean(na.omit(df_scores$percent))` (`r sd(na.omit(df_scores$percent))`). By cohort, the PGY1 class scored `r df$descr[1,1]`, the PGY2 class scored `r df$descr[1,2]`, the PGY3 class scored `r df$descr[1,3]`, and the recent graduates scored `r df$descr[1,4]`. The questions were further broken down by type, as seen in __Figure XXX__.
 
 ```{r t-test}
 # Data 
